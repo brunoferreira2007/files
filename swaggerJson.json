@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Swagger Petstore",
+    "title": "BExpress API",
     "version": "1.0.0",
     "description": "\n\n Inject login page html.\n\n Validate Login\n- Get login from Logins table where Username equal to body.username and Password to body.password.\n- If have result\n\t- Generate token (with credentials and experided time)\n\t- Create new entry in Tokens table\n\t\t- Token - generated before\n\t\t- GUID - from body\n\t\t- DateToken - date now\n- else\n\t- message 'Username or password incorrect'.\n\n<b>Log function</b>\n- Receive loginId, Modulo, message\n- Add log to Logs table. \n- on Catch - call Exceptions function\n\n<b>Exceptions function</b>\n- Receive loginId, Modulo, message and StackTrace\n- Add item to Exceptions table \n\n<b>Accesses function to validate the accesses for the login.</b> \n- Receive token and recurso. \n- Check if token is valid (jwt service with secret key)\n- if yes \n\t- Log on Logs table - Confirmar acessos para o recurso xpto\n\t-  Get permissions for current token.loginId and recurso. Acessos table will be used to retrieve the accesses \n\t- Log on Logs table - Acesso A/W/R para o recurso xpto)\n\t- Return NivelAcesso \n- if no \n\t- Log on Logs table - Acesso negado ao recurso xpto\n\t- return null \n- on Catch - call Exceptions function"
   },
