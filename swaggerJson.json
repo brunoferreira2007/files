@@ -1,0 +1,1228 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Swagger Petstore",
+    "version": "1.0.0",
+    "description": "\n\n Inject login page html.\n\n Validate Login\n- Get login from Logins table where Username equal to body.username and Password to body.password.\n- If have result\n\t- Generate token (with credentials and experided time)\n\t- Create new entry in Tokens table\n\t\t- Token - generated before\n\t\t- GUID - from body\n\t\t- DateToken - date now\n- else\n\t- message 'Username or password incorrect'.\n\n<b>Log function</b>\n- Receive loginId, Modulo, message\n- Add log to Logs table. \n- on Catch - call Exceptions function\n\n<b>Exceptions function</b>\n- Receive loginId, Modulo, message and StackTrace\n- Add item to Exceptions table \n\n<b>Accesses function to validate the accesses for the login.</b> \n- Receive token and recurso. \n- Check if token is valid (jwt service with secret key)\n- if yes \n\t- Log on Logs table - Confirmar acessos para o recurso xpto\n\t-  Get permissions for current token.loginId and recurso. Acessos table will be used to retrieve the accesses \n\t- Log on Logs table - Acesso A/W/R para o recurso xpto)\n\t- Return NivelAcesso \n- if no \n\t- Log on Logs table - Acesso negado ao recurso xpto\n\t- return null \n- on Catch - call Exceptions function"
+  },
+  "host": "petstore.swagger.io",
+  "basePath": "/v2",
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/api/Requests": {
+      "get": {
+        "tags": [
+          "Requests"
+        ],
+        "summary": "Get requests",
+        "description": "Webservice to get requests from Pedidos table. \n<b>Recurso: Requests</b> \n- Call Accesses function - loginId, 'Requests' \n-  If result is A (Administrator) \n\t- Call Log function - loginId, 'Logins', 'A carregar todos os Pedidos' \n\t- Get all requests with pagination \n\t- Call Log function - loginId, 'Requests', 'X pedidods carregados com sucesso' \n\t- Return array  with results and code 200 \n- else If NivelAcesso is W (Write) or R (Read) \n\t- Call Log function - loginId, 'Requests', 'A carregar pedidos' \n\t- Get requests for loginId with pagination.  \n\t- Call Log function - loginId, 'Cards', 'Pedidos carregados com sucesso' \n\t- Return array with results and code 200 \n- else \n\t- return 401 \n- on Catch - call Exceptions function - loginId, 'Requests', message, StackTrace",
+        "operationId": "getRequests",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetPedidos"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Requests"
+        ],
+        "summary": "Create new request",
+        "description": "Webservice to create requests in Pedidos table. \n<b>Recurso: Requests</b> \n- Call Log function - loginId, 'Logins', 'A criar novo pedido' \n- Create new item in Pedidos table with information coming from body \n- If success \n\t- Call Log function - loginId, 'Requests', 'Pedido criado com sucesso' \n\t- Return OK message and code 200 \n- on Catch - call Exceptions function - loginId, 'Requests', message, StackTrace",
+        "operationId": "postRequests",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Pedidos"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Pedidos"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
+    "/api/Requests/{requestID}": {
+      "put": {
+        "tags": [
+          "Requests"
+        ],
+        "summary": "Update status of existing request",
+        "description": "Webservice to update requests in Pedidos table. Receive id of request (inpath), token (in header) and status (in body). \n<b>Recurso: Requests</b> \n- Call Log function - loginId, 'Logins', 'Atualizando estado do pedido' \n- Update item in Pedidos table where id equal to path.id \n- If success \n\t- Call Log function - loginId, 'Requests', 'Pedido atualizado com sucesso' \n\t- Return OK message and code 200 \n- on Catch - call Exceptions function - loginId, 'Requests', message, StackTrace",
+        "operationId": "putRequests",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "requestID",
+            "in": "path",
+            "description": "ID of request that needs to be updated",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/200OK"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
+    "/api/verififyToken": {
+      "get": {
+        "tags": [
+          "Token"
+        ],
+        "summary": "Check if token is valid",
+        "description": "Webservice to verify if token is valid.\n Receive token on header and redirect value (True or False) in Body\n - If token is undefined or invalid\n\t- return 300 and redirect values\n- else\n\t- return 200 and OK message\n- on Catch - call Exceptions function - loginId, 'Logins', message, StackTrace",
+        "operationId": "verifyToken",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "redirect": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/200OK"
+            }
+          },
+          "300": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/LoginAuth"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
+    "/api/verififyGUID/{GUID}": {
+      "get": {
+        "tags": [
+          "Token"
+        ],
+        "summary": "Check if have token",
+        "description": "Webservice will receive by path the GUID and return corresponding token if GUID is valid, not experied and not consumed yet.\n- Get GUID from path\n- If GUID not empty\n\t- Get token item from Tokens table where table.GUID equal to path.GUID\n\t- If result > 0\n\t\t- Check if DateToken >= Now less 15 seconds\n\t\t- if yes\n\t\t\t- Log on Logs table - Sessão iniciada\n\t\t\t- update Bloqueado column of token item in database to true.\n\t\t\t- return 200 and token item.\n- Falha a iniciar sessão\n- return 300 and redirect values\n- on Catch - call Exceptions function - loginId, 'Logins', message, StackTrace",
+        "operationId": "verifyGuid",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "GUID",
+            "in": "path",
+            "description": "GUID to get token",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Token"
+            }
+          },
+          "300": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/LoginAuth"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid /login webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
+    "/api/logins": {
+      "get": {
+        "tags": [
+          "Login"
+        ],
+        "summary": "Get logins",
+        "description": "Webservice to get logins information. \n<b>Recurso: Logins</b> \n- Call Log function - loginId, 'Client', 'Start getting logins' \n- Call Accesses function - loginId, 'Logins' \n-  If result is A (Administrator) \n\t- Call Log function - loginId, 'Logins', 'A carregar Logins' \n\t- Get all logins with pagination \n\t- Call Log function - loginId, 'Logins', 'X logins carregados com sucesso' \n\t- Return array  with results and code 200 \n- else If NivelAcesso is W (Write) or R (Read) \n\t- Call Log function - loginId, 'Logins', 'A carregar Login' \n\t- Get logins for clienteID with pagination. Use Logins table where clienteID column equal to clienteID parameter \n\t- Call Log function - loginId, 'Logins', 'Login carregado com sucesso' \n\t- Return array with results and code 200 \n- else \n\t- return 401 \n- on Catch - call Exceptions function - loginId, 'Logins', message, StackTrace",
+        "operationId": "getLogins",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Logins"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
+    "/api/client": {
+      "get": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Get client",
+        "description": "Webservice to get information about the Client or Clients with pagination. \n<b>Recurso: Client</b> \n- Call Log function - loginId, 'Client', 'Start getting clients' \n- Call Accesses function - loginId, 'Client' \n- If A \n\t- Call Log function - loginId, 'Client', 'A carregar Clients' \n\t- Get all clients from Clientes table with pagination \n\t- Call Log function - loginId, 'Client', 'X clients carregados com sucesso' \n\t- return 200 and clients result\n- else if W or R \n\t- Call Log function - loginId, 'Client', 'A carregar cliente' \n\t- Get client from Clientes table \n\t- Call Log function - loginId, 'Client', 'Cliente carregado com sucesso' \n\t- return 200 and client result\n- else\n\t- return 401 \n- on Catch - call Exceptions function - loginId, 'Client', message, StackTrace",
+        "operationId": "getClients",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetClient"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Create client",
+        "description": "Webservice to create clients. Webservice will receive data from external system and return the result. \n<b>Recurso: Client</b> \n- Call Log function - loginId, 'Client', 'A criar cliente' \n- Call Accesses function - loginId, 'Client' \n- If W or A \n\t- client will be created in 'Clientes' table. \n\t- Call Log function - loginId, 'Client', 'Cliente xpto criado com sucesso' \n\t- return 200 \n- else \n\t- return 401 \n- on Catch - call Exceptions function - loginId, 'Client', message, StackTrace",
+        "operationId": "createClient",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Clientes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/200OK"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
+    "/api/client/{clientID}": {
+      "put": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Update client by ID",
+        "description": "Webservice to update client. Receive data from external system and return the result. \n Webservice receive ID by path and an object.\n ID will be used to update client in 'Clientes' table\n<b>Recurso: Client</b> \n- Call Accesses function - loginId, 'Client' \n- If W or A \n\t- client will be updated in 'Clientes' table. \n\t- Call Log function - loginId, 'Client', 'Cliente xpto atualizado com sucesso' \n\t- return 200\n- else\n\t- return 401 \n- on Catch - call Exceptions function - loginId, 'Client', message, StackTrace",
+        "operationId": "updateClient",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          },
+          {
+            "name": "clientID",
+            "in": "path",
+            "description": "ID of client that needs to be updated",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "List of client object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Clientes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/200OK"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
+    "/api/card": {
+      "get": {
+        "tags": [
+          "Card"
+        ],
+        "summary": "Get Cards",
+        "description": "Webservice to get information about the Cards with pagination. \n<b>Recurso: Cards</b> \n- Call Log function - loginId, 'Cards', 'Start getting cards' \n- Call Accesses function - loginId, 'Cards' \n- If A \n\t- Call Log function - loginId, 'Cards', 'A carregar Cartoes' \n\t- Get all cards from Cartoes table \n\t- Call Log function - loginId, 'Cards', 'X cartões carregados com sucesso' \n\t- return 200 and cards result\n- else if W or R \n\t- Call Log function - loginId, 'Cards', 'A carregar cartão' \n\t- Get cards for loginId from Cartoes table \n\t- Call Log function - loginId, 'Cards', 'Cartão carregado com sucesso' \n\t- return 200 and cars result\n- else\n\t- return 401 \n- on Catch - call Exceptions function - loginId, 'Cards', message, StackTrace",
+        "operationId": "getCards",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetCard"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Card"
+        ],
+        "summary": "Create card",
+        "description": "Webservice to create cards. Webservice will receive data from external system and return the result. \n<b>Recurso: Cards</b> \n- Call Accesses function - loginId, 'Cards' \n- If W or A \n\t- card will be created in 'Cartoes' table. \n\t- Call Log function - loginId, 'Cards', 'Cartao criado com sucesso' \n\t- return 200 \n- else \n\t- return 401 \n- on Catch - call Exceptions function - loginId, 'Cards', message, StackTrace",
+        "operationId": "createCard",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Cartoes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/200OK"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
+    "/api/card/{cardID}": {
+      "put": {
+        "tags": [
+          "Card"
+        ],
+        "summary": "Update card by ID",
+        "description": "Webservice to update card. Receive data from external system and return the result. \n Webservice receive ID by path and an object.\n ID will be used to update card in 'Cartoes' table \n<b>Recurso: Cards</b> \n- Call Accesses function - loginId, 'Cards' \n- If W or A \n\t- card will be updated in 'Cartoes' table. \n\t- Call Log function - loginId, 'Cards', 'Cartão atualizado com sucesso' \n\t- return 200\n- else\n\t- return 401 \n- on Catch - call Exceptions function - loginId, 'Cards', message, StackTrace",
+        "operationId": "updateCards",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          },
+          {
+            "name": "cardID",
+            "in": "path",
+            "description": "ID of card that needs to be updated",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Cartoes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/200OK"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
+    "/api/card/validate": {
+      "get": {
+        "tags": [
+          "Card"
+        ],
+        "summary": "Validate PIN",
+        "description": "Webservice to validate PIN and return the result \n<b>Recurso: Cards</b> \n- Call Log function - loginId, 'Cards', 'Iniciando validação de PIN' \n- Get encrypted PIN from body \n- Get Card details  \n- Call Log function - loginId, 'Cards', 'Dados do cartão carregados' \n- If PIN not valid  \n\t- Call Log function - loginId, 'Cards', 'PIN inválido, tem x tentativas restantes' \n\t- Update NumeroTentativas to NumeroTentativas-1 (if new NumeroTentativas is 0 then block card)\n\t- return message 'PIN inválido' and NumeroTentativas (code 300) \n- else if Cartão not active  \n\t- Call Log function - loginId, 'Cards', 'Cartão inativo' \n\t- return message 'Cartão não está ativo' \n- else if Expired  \n\t- Call Log function - loginId, 'Cards', 'Cartão expirado' \n\t- return message 'Validade do cartão expirada' \n- else if Blocked  \n\t- Call Log function - loginId, 'Cards', 'Cartão está bloqueado' \n\t- return message 'Cartão bloqueado' \n- else  \n\t- Call Log function - loginId, 'Cards', 'PIN correto' \n\t- Update Blocked to true on Cartoes table \n\t- return OK message TODO \n- on Catch - call Exceptions function - loginId, 'Cards', message, StackTrace",
+        "operationId": "validatePIN",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "pin": {
+                  "type": "string"
+                },
+                "cardId": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "300": {
+            "description": "PIN error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "300"
+                },
+                "response": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string",
+                      "example": "PIN inválido. Você tem x tentativas restantes"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Card"
+        ],
+        "summary": "Cancel PIN",
+        "description": "Webservice to cancel PIN and update Blocked to false \n<b>Recurso: Cards</b> \n- Call Log function - loginId, 'Cards', 'Cancelar PIN do cartão' \n\t- Update Blocked to false on Cartoes table \n\t- return OK \n- on Catch - call Exceptions function - loginId, 'Cards', message, StackTrace",
+        "operationId": "cancelPIN",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "bearer <_TOKEN_>"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "cardId": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "300": {
+            "description": "PIN error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "300"
+                },
+                "response": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string",
+                      "example": "PIN inválido. Você tem x tentativas restantes"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Unauthorized"
+            }
+          },
+          "404": {
+            "description": "Invalid webservice",
+            "schema": {
+              "$ref": "#/definitions/NotFound"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "GetPedidos": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": 200
+        },
+        "response": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "example": "OK"
+            },
+            "result": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "schema": {
+                    "$ref": "#/definitions/Pedidos"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "xml": {
+        "name": "GetPedidos"
+      }
+    },
+    "Pedidos": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "number"
+        },
+        "LoginID": {
+          "type": "number"
+        },
+        "Descricao": {
+          "type": "string"
+        },
+        "Status": {
+          "type": "string"
+        }
+      },
+      "xml": {
+        "name": "Pedidos"
+      }
+    },
+    "LoginAuth": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "300"
+        },
+        "response": {
+          "type": "object",
+          "properties": {
+            "redirectURL": {
+              "type": "string",
+              "example": "http://qualquer"
+            },
+            "isRedirect": {
+              "type": "boolean",
+              "example": "true"
+            }
+          }
+        }
+      }
+    },
+    "Logins": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "200"
+        },
+        "response": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "result": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "xml": {
+        "name": "Logins"
+      }
+    },
+    "Clientes": {
+      "type": "object",
+      "properties": {
+        "nomeCliente": {
+          "type": "string"
+        },
+        "plafondTotal": {
+          "type": "number",
+          "example": "5000,00",
+          "description": "number with two decimal places"
+        },
+        "emailResponsavel": {
+          "type": "string",
+          "example": "nome@email.com"
+        }
+      },
+      "xml": {
+        "name": "Clientes"
+      }
+    },
+    "GetClient": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "200"
+        },
+        "response": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "example": "OK"
+            },
+            "result": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "contratoID": {
+                    "type": "string"
+                  },
+                  "nomeCliente": {
+                    "type": "string"
+                  },
+                  "plafondTotal": {
+                    "type": "number",
+                    "example": "5000,00",
+                    "description": "number with two decimal places"
+                  },
+                  "emailResponsavel": {
+                    "type": "string",
+                    "example": "nome@email.com"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "xml": {
+        "name": "Clientes"
+      }
+    },
+    "Cartoes": {
+      "type": "object",
+      "properties": {
+        "clienteID": {
+          "type": "string"
+        },
+        "PIN": {
+          "type": "string"
+        },
+        "emailResponsavel": {
+          "type": "string"
+        },
+        "validade": {
+          "type": "string"
+        },
+        "plafond": {
+          "type": "number",
+          "example": 2000,
+          "description": "number with two decimal places"
+        },
+        "percentagemAlertaConsumo": {
+          "type": "number",
+          "example": 70
+        },
+        "ativo": {
+          "type": "boolean",
+          "example": true
+        }
+      },
+      "xml": {
+        "name": "Cartoes"
+      }
+    },
+    "GetCard": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": 200
+        },
+        "response": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "example": "OK"
+            },
+            "result": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "PIN": {
+                    "type": "string"
+                  },
+                  "emailResponsavel": {
+                    "type": "string"
+                  },
+                  "validade": {
+                    "type": "string"
+                  },
+                  "plafond": {
+                    "type": "number"
+                  },
+                  "percentagemAlertaConsumo": {
+                    "type": "number"
+                  },
+                  "ativo": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "xml": {
+        "name": "Clientes"
+      }
+    },
+    "Token": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "200"
+        },
+        "response": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "example": "OK"
+            },
+            "token": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "200OK": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "200"
+        },
+        "response": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "example": "OK"
+            }
+          }
+        }
+      },
+      "xml": {
+        "name": "200OK"
+      }
+    },
+    "NotFound": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "404"
+        },
+        "response": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "example": "Not found"
+            }
+          }
+        }
+      },
+      "xml": {
+        "name": "NotFound"
+      }
+    },
+    "Unauthorized": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "401"
+        },
+        "response": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "example": "Unauthorized"
+            }
+          }
+        }
+      },
+      "xml": {
+        "name": "Unauthorized"
+      }
+    },
+    "InternalServerError": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "500"
+        },
+        "response": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "example": "Internal Server Error"
+            }
+          }
+        }
+      },
+      "xml": {
+        "name": "InternalServerError"
+      }
+    }
+  }
+}
